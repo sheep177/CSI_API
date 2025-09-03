@@ -1,0 +1,14 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.vscode/
+.idea/
+*.user
+*.suo
+*.db
+*.sqlite
+*.log
+.env
+appsettings.Development.json
