@@ -1,14 +1,11 @@
-bin/
-obj/
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
-.vscode/
-.idea/
-*.user
-*.suo
-*.db
-*.sqlite
-*.log
-.env
-appsettings.Development.json
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<EmailService>();
+
+var app = builder.Build();
+
+// ... rest of the code ...
