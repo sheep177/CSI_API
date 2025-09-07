@@ -76,4 +76,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
     }
     public DbSet<EmailVerification> EmailVerifications => Set<EmailVerification>();
+    
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 }

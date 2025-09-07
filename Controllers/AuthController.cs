@@ -146,9 +146,68 @@ public class AuthController(AppDbContext db, IConfiguration config, EmailService
     {
         return email.Contains("@") && email.Contains(".");
     }
+    
 
     public record LoginRequest(string Email, string Password);
     public record RegisterRequest(string Email, string Password);
     public record EmailOnlyRequest(string Email);
     public record VerifyEmailRequest(string Email, string Code);
+    
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == req.Email);
+        if (user == null)
+        {
+            return NotFound(new { message = "Email not found" });
+        }
+
+        var token = Guid.NewGuid().ToString();
+        var reset = new PasswordResetToken
+        {
+            Email = req.Email,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+        };
+
+        db.PasswordResetTokens.Add(reset);
+        await db.SaveChangesAsync();
+
+        var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={token}";
+
+        await email.SendEmailAsync(
+            to: req.Email,
+            subject: "Reset your password",
+            body: $"Click the link to reset your password: <a href=\"{resetLink}\">{resetLink}</a>"
+        );
+
+        return Ok(new { message = "Reset link sent to your email." });
+    }
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
+    {
+        var entry = await db.PasswordResetTokens.FirstOrDefaultAsync(p =>
+            p.Token == req.Token && !p.Used && p.ExpiresAt > DateTime.UtcNow);
+
+        if (entry == null)
+        {
+            return BadRequest(new { message = "Invalid or expired token" });
+        }
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == entry.Email);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        entry.Used = true;
+
+        await db.SaveChangesAsync();
+        return Ok(new { message = "Password has been reset successfully." });
+    }
+    public record ForgotPasswordRequest(string Email);
+    public record ResetPasswordRequest(string Token, string NewPassword);
 }
