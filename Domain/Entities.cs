@@ -10,6 +10,11 @@ public class User
     public string Email { get; set; } = default!;
     public string PasswordHash { get; set; } = default!;
     public Role Role { get; set; } = Role.Citizen;
+    
+    public string? FullName { get; set; }   
+    public string? Phone { get; set; }      
+    public string? Address { get; set; }    
+    public DateTime? DateOfBirth { get; set; }  
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? LastLoginAt { get; set; }

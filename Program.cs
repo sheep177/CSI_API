@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<EmailService>();
 
-// Swagger with JWT
+// ✅ Swagger with JWT Auth support
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -30,14 +30,18 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Council service requests backend."
     });
+
+    // 添加 JWT Bearer 支持
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = ParameterLocation.Header,
-        Description = "Please enter JWT with Bearer prefix",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by a space and your JWT token.\nExample: Bearer xxxxx.yyyyy.zzzzz"
     });
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -47,9 +51,10 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                In = ParameterLocation.Header
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
@@ -113,18 +118,20 @@ app.Map("/error", (HttpContext http) =>
     );
 });
 
+// ✅ Swagger UI + Authorize button
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Authentication & Routing
 app.UseHttpsRedirection();
-app.UseAuthentication();
+app.UseAuthentication(); // 必须在 Authorization 前调用
 app.UseAuthorization();
 app.MapControllers();
 
-// Health
+// Health check endpoints
 app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
 app.MapGet("/health/ready", async (AppDbContext db) =>
 {

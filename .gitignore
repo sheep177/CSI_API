@@ -2,9 +2,16 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+# Rider / IntelliJ
+.idea/
 
-builder.Services.AddScoped<EmailService>();
+# Build output
+bin/
+obj/
 
-var app = builder.Build();
+# Local database
+*.db
+
+# OS files
+.DS_Store
 

@@ -177,7 +177,7 @@ public class AuthController(AppDbContext db, IConfiguration config, EmailService
         var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={token}";
 
         await email.SendEmailAsync(
-            to: req.Email,
+            to: req.Email,   
             subject: "Reset your password",
             body: $"Click the link to reset your password: <a href=\"{resetLink}\">{resetLink}</a>"
         );
